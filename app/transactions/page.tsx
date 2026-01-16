@@ -148,7 +148,7 @@ export default function TransactionsPage() {
       </motion.div>
 
       {/* Summary Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
         <Card className="border-slate-800 bg-gradient-to-br from-green-900/20 to-slate-900/50">
           <CardHeader>
             <CardTitle className="text-slate-100 text-lg flex items-center gap-2">
@@ -188,7 +188,7 @@ export default function TransactionsPage() {
       </div>
 
       {/* Two Column Layout */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
         {/* Income Column */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
