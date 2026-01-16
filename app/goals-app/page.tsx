@@ -333,7 +333,7 @@ export default function GoalsAppPage() {
                 setShowForm(!showForm);
                 if (!showForm) {
                   setEditingGoal(null);
-                  setFormData({ title: "", targetAmount: "", category: "Дохід", deadline: "" });
+                  setFormData({ title: "", type: "financial", targetAmount: "", category: "Дохід", deadline: "", description: "", priority: "medium" });
                   setSelectedIncomeCategories([]);
                 }
               }}
@@ -562,7 +562,7 @@ export default function GoalsAppPage() {
                     onClick={() => {
                       setShowForm(false);
                       setEditingGoal(null);
-                      setFormData({ title: "", targetAmount: "", category: "Дохід", deadline: "" });
+                      setFormData({ title: "", type: "financial", targetAmount: "", category: "Дохід", deadline: "", description: "", priority: "medium" });
                       setSelectedIncomeCategories([]);
                     }}
                     className="flex-1"
