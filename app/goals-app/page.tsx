@@ -14,6 +14,7 @@ import { motion } from "framer-motion";
 import { LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, PieChart, Pie, Cell } from "recharts";
 import { CurrencySwitcher } from "@/components/currency-switcher";
 import { currencyAPI } from "@/lib/currency-api";
+import { cn } from "@/lib/utils";
 
 export default function GoalsAppPage() {
   const router = useRouter();
