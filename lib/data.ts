@@ -136,7 +136,7 @@ export const dataStore = {
           const matchingGoals = goals.filter(g => {
             // Підтримка нового формату (масив) та старого (одна категорія)
             const categories = g.incomeCategories || (g.incomeCategory ? [g.incomeCategory] : []);
-            return categories.includes(transaction.source);
+            return transaction.source ? categories.includes(transaction.source) : false;
           });
           
           matchingGoals.forEach(goal => {
@@ -179,14 +179,8 @@ export const dataStore = {
           if (transaction.assetId) {
             const asset = assets.find(a => a.id === transaction.assetId);
             if (asset) {
-              let newValue = asset.value;
-              if (transaction.type === "income" && transaction.status === "received") {
-                // Відкотити дохід - відняти від активу
-                newValue = Math.max(0, asset.value - transaction.amount);
-              } else if (transaction.type === "expense") {
-                // Відкотити витрату - додати до активу
-                newValue = asset.value + transaction.amount;
-              }
+              // Відкотити дохід - відняти від активу
+              const newValue = Math.max(0, asset.value - transaction.amount);
               dataStore.assets.update(transaction.assetId, { 
                 value: newValue,
                 dateUpdated: new Date().toISOString()
@@ -197,7 +191,7 @@ export const dataStore = {
           // Відкотити зміни в цілях
           const matchingGoals = goals.filter(g => {
             const categories = g.incomeCategories || (g.incomeCategory ? [g.incomeCategory] : []);
-            return categories.includes(transaction.source);
+            return transaction.source ? categories.includes(transaction.source) : false;
           });
           
           matchingGoals.forEach(goal => {
