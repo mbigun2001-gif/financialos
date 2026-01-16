@@ -69,11 +69,24 @@ export default function SettingsPage() {
   const [syncStatus, setSyncStatus] = useState<"idle" | "syncing" | "success" | "error">("idle");
   const [syncMessage, setSyncMessage] = useState("");
   const [qrCodeData, setQrCodeData] = useState("");
+  const [supabaseStatus, setSupabaseStatus] = useState<"checking" | "connected" | "disconnected">("checking");
 
   useEffect(() => {
     dataStore.init();
     loadCategories();
     loadMonobankSettings();
+    
+    // Перевірка підключення до Supabase
+    const checkSupabase = async () => {
+      try {
+        const { checkSupabaseConnection } = require("@/lib/supabase");
+        const isConnected = await checkSupabaseConnection();
+        setSupabaseStatus(isConnected ? "connected" : "disconnected");
+      } catch (error) {
+        setSupabaseStatus("disconnected");
+      }
+    };
+    checkSupabase();
   }, []);
 
   const loadMonobankSettings = () => {
@@ -629,9 +642,27 @@ export default function SettingsPage() {
               <span className="text-xs text-blue-400 mt-1 block">
                 💡 Синхронізація відбувається автоматично кожні 10 секунд через Supabase
               </span>
-              {!process.env.NEXT_PUBLIC_SUPABASE_URL && (
+              <div className="mt-2 flex items-center gap-2">
+                <span className="text-xs text-slate-500">Статус Supabase:</span>
+                {supabaseStatus === "checking" && (
+                  <span className="text-xs text-yellow-400">Перевірка...</span>
+                )}
+                {supabaseStatus === "connected" && (
+                  <span className="text-xs text-green-400 flex items-center gap-1">
+                    <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+                    Підключено
+                  </span>
+                )}
+                {supabaseStatus === "disconnected" && (
+                  <span className="text-xs text-red-400 flex items-center gap-1">
+                    <span className="w-2 h-2 bg-red-400 rounded-full"></span>
+                    Не підключено
+                  </span>
+                )}
+              </div>
+              {supabaseStatus === "disconnected" && (
                 <span className="text-xs text-orange-400 mt-1 block">
-                  ⚠️ Supabase не налаштовано. Додайте змінні оточення в .env.local
+                  ⚠️ Перевірте налаштування Supabase в .env.local та перезапустіть сервер
                 </span>
               )}
             </p>
