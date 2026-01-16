@@ -88,15 +88,15 @@ export default function LoginPage() {
       >
         <Card className="border-slate-800 bg-gradient-to-br from-slate-900/90 to-slate-800/50 backdrop-blur-sm">
           <CardHeader className="text-center space-y-4 pb-6">
-            <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="flex flex-col md:flex-row items-center justify-center gap-3 mb-4">
               <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600">
-                <DollarSign className="h-8 w-8 text-white" />
+                <DollarSign className="h-6 w-6 md:h-8 md:w-8 text-white" />
               </div>
-              <div>
-                <CardTitle className="text-2xl font-bold bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
+              <div className="text-center md:text-left">
+                <CardTitle className="text-xl md:text-2xl font-bold bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
                   Фінансова ОС
                 </CardTitle>
-                <CardDescription className="text-slate-400">
+                <CardDescription className="text-slate-400 text-sm">
                   Система управління фінансами
                 </CardDescription>
               </div>
