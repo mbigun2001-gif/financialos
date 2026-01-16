@@ -1,0 +1,48 @@
+{
+  "name": "Фінансова ОС",
+  "short_name": "Фінансова ОС",
+  "description": "Преміальна фінансова операційна система для високопродуктивних підприємців",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["finance", "productivity", "business"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Дашборд",
+      "short_name": "Дашборд",
+      "description": "Відкрити головний дашборд",
+      "url": "/dashboard",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Досягнення цілей",
+      "short_name": "Цілі",
+      "description": "Відкрити трекер цілей",
+      "url": "/goals-app",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
