@@ -24,7 +24,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    // Ініціалізуємо автоматичну синхронізацію для авторизованих користувачів
+    const { initAutoSync } = require("@/lib/auto-sync");
+    const cleanup = initAutoSync();
+    
     setIsChecking(false);
+    
+    return cleanup;
   }, [pathname, router]);
 
   // Показуємо завантаження під час перевірки

@@ -977,24 +977,26 @@ export default function DashboardPage() {
       />
 
       {/* Мобільні кнопки - знизу під великий палець */}
-      <div className="fixed bottom-0 left-0 right-0 md:hidden z-50 bg-slate-900/95 backdrop-blur-sm border-t border-slate-800 p-4 safe-area-inset-bottom" style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom))' }}>
-        <div className="flex gap-3 max-w-md mx-auto">
+      <div className="fixed bottom-0 left-0 right-0 md:hidden z-50 bg-slate-900/95 backdrop-blur-sm border-t border-slate-800 p-2 safe-area-inset-bottom" style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}>
+        <div className="flex gap-2 max-w-full mx-auto px-2">
           <Button
             onClick={() => setShowIncomeDialog(true)}
-            className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/20"
-            size="lg"
+            className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-500/20 text-sm"
+            size="sm"
           >
-            <Plus className="h-5 w-5 mr-2" />
-            Додати дохід
+            <Plus className="h-4 w-4 mr-1" />
+            <span className="hidden xs:inline">Додати дохід</span>
+            <span className="xs:hidden">Дохід</span>
           </Button>
           <Button
             onClick={() => setShowExpenseDialog(true)}
             variant="destructive"
-            className="flex-1 shadow-lg shadow-red-500/20"
-            size="lg"
+            className="flex-1 shadow-lg shadow-red-500/20 text-sm"
+            size="sm"
           >
-            <Plus className="h-5 w-5 mr-2" />
-            Додати розхід
+            <Plus className="h-4 w-4 mr-1" />
+            <span className="hidden xs:inline">Додати розхід</span>
+            <span className="xs:hidden">Розхід</span>
           </Button>
         </div>
       </div>

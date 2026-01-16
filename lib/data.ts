@@ -110,6 +110,13 @@ export const dataStore = {
       // Зберегти в localStorage
       if (typeof window !== "undefined") {
         localStorage.setItem("transactions", JSON.stringify(transactions));
+        // Тригеримо синхронізацію
+        try {
+          const { triggerDataSync } = require("./sync-trigger");
+          triggerDataSync();
+        } catch (e) {
+          // Ігноруємо помилки якщо модуль не завантажений
+        }
         
         // Оновити актив, якщо він вказаний
         if (transaction.assetId) {
@@ -283,6 +290,10 @@ export const dataStore = {
       assets.push(asset);
       if (typeof window !== "undefined") {
         localStorage.setItem("assets", JSON.stringify(assets));
+        try {
+          const { triggerDataSync } = require("./sync-trigger");
+          triggerDataSync();
+        } catch (e) {}
       }
       return asset;
     },
@@ -292,6 +303,10 @@ export const dataStore = {
         assets[index] = { ...assets[index], ...updates, dateUpdated: new Date().toISOString() };
         if (typeof window !== "undefined") {
           localStorage.setItem("assets", JSON.stringify(assets));
+          try {
+            const { triggerDataSync } = require("./sync-trigger");
+            triggerDataSync();
+          } catch (e) {}
         }
       }
     },
@@ -299,6 +314,10 @@ export const dataStore = {
       assets = assets.filter(a => a.id !== id);
       if (typeof window !== "undefined") {
         localStorage.setItem("assets", JSON.stringify(assets));
+        try {
+          const { triggerDataSync } = require("./sync-trigger");
+          triggerDataSync();
+        } catch (e) {}
       }
     },
     getTotal: (type?: AssetType) => {
@@ -343,6 +362,10 @@ export const dataStore = {
       goals.push(goal);
       if (typeof window !== "undefined") {
         localStorage.setItem("goals", JSON.stringify(goals));
+        try {
+          const { triggerDataSync } = require("./sync-trigger");
+          triggerDataSync();
+        } catch (e) {}
       }
       return goal;
     },
@@ -352,6 +375,10 @@ export const dataStore = {
         goals[index] = { ...goals[index], ...updates };
         if (typeof window !== "undefined") {
           localStorage.setItem("goals", JSON.stringify(goals));
+          try {
+            const { triggerDataSync } = require("./sync-trigger");
+            triggerDataSync();
+          } catch (e) {}
         }
       }
     },
@@ -359,6 +386,10 @@ export const dataStore = {
       goals = goals.filter(g => g.id !== id);
       if (typeof window !== "undefined") {
         localStorage.setItem("goals", JSON.stringify(goals));
+        try {
+          const { triggerDataSync } = require("./sync-trigger");
+          triggerDataSync();
+        } catch (e) {}
       }
     },
   },
@@ -387,6 +418,10 @@ export const dataStore = {
       liabilities.push(liability);
       if (typeof window !== "undefined") {
         localStorage.setItem("liabilities", JSON.stringify(liabilities));
+        try {
+          const { triggerDataSync } = require("./sync-trigger");
+          triggerDataSync();
+        } catch (e) {}
       }
       return liability;
     },
@@ -396,6 +431,10 @@ export const dataStore = {
         liabilities[index] = { ...liabilities[index], ...updates, dateUpdated: new Date().toISOString() };
         if (typeof window !== "undefined") {
           localStorage.setItem("liabilities", JSON.stringify(liabilities));
+          try {
+            const { triggerDataSync } = require("./sync-trigger");
+            triggerDataSync();
+          } catch (e) {}
         }
       }
     },
