@@ -661,9 +661,20 @@ export default function SettingsPage() {
                 )}
               </div>
               {supabaseStatus === "disconnected" && (
-                <span className="text-xs text-orange-400 mt-1 block">
-                  ⚠️ Перевірте налаштування Supabase в .env.local та перезапустіть сервер
-                </span>
+                <div className="text-xs text-orange-400 mt-1 space-y-1">
+                  <p>⚠️ Supabase не налаштовано. Виконайте наступні кроки:</p>
+                  <ol className="list-decimal list-inside ml-2 space-y-1 text-slate-400">
+                    <li>Створіть файл <code className="bg-slate-800 px-1 rounded">.env.local</code> в корені проекту</li>
+                    <li>Додайте змінні:
+                      <pre className="bg-slate-900 p-2 rounded mt-1 text-[10px] overflow-x-auto">
+{`NEXT_PUBLIC_SUPABASE_URL=https://jmhvlboizpvdxtxqovhe.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=ваш_anon_key`}
+                      </pre>
+                    </li>
+                    <li>Отримайте Anon Key в Supabase Dashboard → Settings → API</li>
+                    <li>Перезапустіть dev сервер після додавання змінних</li>
+                  </ol>
+                </div>
               )}
             </p>
 

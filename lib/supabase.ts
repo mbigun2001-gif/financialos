@@ -8,7 +8,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
   console.warn('Supabase credentials not found. Using localStorage fallback.');
 }
 
-export const supabase = supabaseUrl && supabaseAnonKey
+export const supabase = supabaseUrl && supabaseAnonKey && isValidKey
   ? createClient(supabaseUrl, supabaseAnonKey)
   : null;
 
