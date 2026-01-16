@@ -11,34 +11,71 @@ const LAST_CLOUD_SYNC_KEY = "financial_os_last_cloud_sync";
 // Простий cloud storage через localStorage + автоматичний sync
 // Для production можна замінити на Firebase, Supabase або інший backend
 
-// Збереження даних в cloud (через localStorage як тимчасове рішення)
-// В production це має бути API endpoint
-function saveToCloud(data: SyncData): void {
+// Збереження даних в cloud через API
+async function saveToCloud(data: SyncData): Promise<void> {
   if (typeof window === "undefined") return;
   
   try {
-    // Зберігаємо в localStorage з timestamp
+    const user = getCurrentUser();
+    if (!user) return;
+
     const cloudData = {
       ...data,
       deviceId: getDeviceId(),
       syncedAt: Date.now(),
     };
     
+    // Зберігаємо в localStorage як fallback
     localStorage.setItem(CLOUD_SYNC_KEY, JSON.stringify(cloudData));
     localStorage.setItem(LAST_CLOUD_SYNC_KEY, Date.now().toString());
     
-    // В production тут має бути API call:
-    // await fetch('/api/sync', { method: 'POST', body: JSON.stringify(cloudData) });
+    // Відправляємо на сервер
+    try {
+      const response = await fetch("/api/sync", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          userId: user.userId,
+          data: cloudData,
+          deviceId: getDeviceId(),
+        }),
+      });
+
+      if (!response.ok) {
+        console.warn("Помилка збереження на сервер, використовуємо localStorage");
+      }
+    } catch (error) {
+      console.warn("Неможливо з'єднатися з сервером, використовуємо localStorage:", error);
+    }
   } catch (error) {
     console.error("Помилка збереження в cloud:", error);
   }
 }
 
-// Завантаження даних з cloud
-function loadFromCloud(): SyncData | null {
+// Завантаження даних з cloud через API
+async function loadFromCloud(): Promise<SyncData | null> {
   if (typeof window === "undefined") return null;
   
   try {
+    const user = getCurrentUser();
+    if (!user) return null;
+
+    // Спробуємо завантажити з сервера
+    try {
+      const response = await fetch(`/api/sync?userId=${user.userId}`);
+      if (response.ok) {
+        const result = await response.json();
+        if (result.data) {
+          return result.data;
+        }
+      }
+    } catch (error) {
+      console.warn("Неможливо з'єднатися з сервером, використовуємо localStorage:", error);
+    }
+
+    // Fallback на localStorage
     const stored = localStorage.getItem(CLOUD_SYNC_KEY);
     if (!stored) return null;
     
@@ -46,7 +83,7 @@ function loadFromCloud(): SyncData | null {
     
     // Перевіряємо чи дані не застарілі (більше 1 години)
     const oneHour = 60 * 60 * 1000;
-    if (Date.now() - cloudData.syncedAt > oneHour) {
+    if (cloudData.syncedAt && Date.now() - cloudData.syncedAt > oneHour) {
       return null;
     }
     
@@ -81,7 +118,7 @@ export function initCloudSync(): () => void {
   }
 
   // Функція синхронізації
-  const performSync = () => {
+  const performSync = async () => {
     try {
       const user = getCurrentUser();
       if (!user) return;
@@ -91,8 +128,8 @@ export function initCloudSync(): () => void {
       const lastSync = localStorage.getItem(LAST_CLOUD_SYNC_KEY);
       const lastSyncTime = lastSync ? parseInt(lastSync, 10) : 0;
 
-      // Завантажуємо дані з cloud
-      const cloudData = loadFromCloud();
+      // Завантажуємо дані з cloud (async)
+      const cloudData = await loadFromCloud();
       
       if (cloudData) {
         // Якщо cloud дані новіші, імпортуємо їх
@@ -111,7 +148,7 @@ export function initCloudSync(): () => void {
       // Якщо наші дані новіші, зберігаємо в cloud
       if (currentData.lastSync > lastSyncTime) {
         console.log("Синхронізація: експорт даних в cloud");
-        saveToCloud(currentData);
+        await saveToCloud(currentData);
       }
     } catch (error) {
       console.error("Помилка синхронізації:", error);
@@ -149,30 +186,25 @@ export function initCloudSync(): () => void {
 }
 
 // Примусова синхронізація
-export function forceCloudSync(): Promise<void> {
-  return new Promise((resolve) => {
-    const user = getCurrentUser();
-    if (!user) {
-      resolve();
-      return;
-    }
+export async function forceCloudSync(): Promise<void> {
+  const user = getCurrentUser();
+  if (!user) {
+    return;
+  }
 
-    try {
-      const currentData = exportData();
-      saveToCloud(currentData);
-      
-      // Невелика затримка перед перевіркою оновлень
-      setTimeout(() => {
-        const cloudData = loadFromCloud();
-        if (cloudData && cloudData.deviceId !== getDeviceId()) {
-          importData(cloudData, true);
-          window.dispatchEvent(new CustomEvent("dataSynced", { detail: cloudData }));
-        }
-        resolve();
-      }, 500);
-    } catch (error) {
-      console.error("Помилка примусової синхронізації:", error);
-      resolve();
+  try {
+    const currentData = exportData();
+    await saveToCloud(currentData);
+    
+    // Невелика затримка перед перевіркою оновлень
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const cloudData = await loadFromCloud();
+    if (cloudData && cloudData.deviceId !== getDeviceId()) {
+      importData(cloudData, true);
+      window.dispatchEvent(new CustomEvent("dataSynced", { detail: cloudData }));
     }
-  });
+  } catch (error) {
+    console.error("Помилка примусової синхронізації:", error);
+  }
 }
