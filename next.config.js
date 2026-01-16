@@ -1,13 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: false,
   compiler: {
     removeConsole: false,
   },
-  experimental: {
-    forceSwcTransforms: false,
-  },
+  // Додаємо порожню конфігурацію turbopack для Next.js 16
+  turbopack: {},
 }
 
 // Умовна конфігурація PWA (тільки якщо пакет встановлений)
