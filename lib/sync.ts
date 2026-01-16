@@ -14,6 +14,8 @@ export interface SyncData {
   sessions?: any[]; // Додаємо сесії для синхронізації
   settings: Record<string, string>;
   lastSync: number;
+  deviceId?: string; // ID пристрою для cloud sync
+  syncedAt?: number; // Timestamp синхронізації
 }
 
 // Простий API для синхронізації через localStorage + cloud backup

@@ -621,10 +621,13 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-slate-400">
-              Експортуйте або імпортуйте дані для синхронізації між пристроями (телефон, комп'ютер, веб-версія).
+              Автоматична синхронізація між пристроями працює в фоновому режимі.
               <br />
               <span className="text-xs text-slate-500 mt-1 block">
                 Включає: транзакції, цілі, активи, зобов'язання, категорії, користувачів та налаштування
+              </span>
+              <span className="text-xs text-blue-400 mt-1 block">
+                💡 Синхронізація відбувається автоматично кожні 10 секунд
               </span>
             </p>
 
@@ -644,6 +647,28 @@ export default function SettingsPage() {
 
             <div className="grid gap-3 md:grid-cols-2">
               <Button
+                onClick={async () => {
+                  try {
+                    setSyncStatus("syncing");
+                    setSyncMessage("Синхронізація...");
+                    const { forceCloudSync } = require("@/lib/cloud-sync");
+                    await forceCloudSync();
+                    setSyncStatus("success");
+                    setSyncMessage("Дані успішно синхронізовано");
+                    setTimeout(() => setSyncStatus("idle"), 3000);
+                  } catch (error) {
+                    setSyncStatus("error");
+                    setSyncMessage("Помилка синхронізації");
+                    setTimeout(() => setSyncStatus("idle"), 3000);
+                  }
+                }}
+                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Синхронізувати зараз
+              </Button>
+              
+              <Button
                 onClick={() => {
                   try {
                     exportToFile();
@@ -656,10 +681,11 @@ export default function SettingsPage() {
                     setTimeout(() => setSyncStatus("idle"), 3000);
                   }
                 }}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                variant="outline"
+                className="border-slate-700 text-slate-300 hover:bg-slate-800"
               >
                 <Download className="h-4 w-4 mr-2" />
-                Експортувати дані
+                Експортувати у файл
               </Button>
 
               <Button

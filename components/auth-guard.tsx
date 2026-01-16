@@ -26,11 +26,17 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
 
     // Ініціалізуємо автоматичну синхронізацію для авторизованих користувачів
     const { initAutoSync } = require("@/lib/auto-sync");
-    const cleanup = initAutoSync();
+    const { initCloudSync } = require("@/lib/cloud-sync");
+    
+    const cleanupAuto = initAutoSync();
+    const cleanupCloud = initCloudSync();
     
     setIsChecking(false);
     
-    return cleanup;
+    return () => {
+      cleanupAuto();
+      cleanupCloud();
+    };
   }, [pathname, router]);
 
   // Показуємо завантаження під час перевірки
