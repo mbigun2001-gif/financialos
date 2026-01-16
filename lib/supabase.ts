@@ -15,6 +15,12 @@ const isValidKey = supabaseAnonKey &&
 if (!supabaseUrl || !supabaseAnonKey || !isValidKey) {
   console.warn('Supabase credentials not found or invalid. Using localStorage fallback.');
   console.warn('Please add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local');
+  console.warn('Current values:', { 
+    hasUrl: !!supabaseUrl, 
+    hasKey: !!supabaseAnonKey, 
+    isValid: isValidKey,
+    keyLength: supabaseAnonKey?.length 
+  });
 }
 
 export const supabase = supabaseUrl && supabaseAnonKey && isValidKey

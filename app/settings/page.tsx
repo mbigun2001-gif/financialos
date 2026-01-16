@@ -79,10 +79,22 @@ export default function SettingsPage() {
     // Перевірка підключення до Supabase
     const checkSupabase = async () => {
       try {
-        const { checkSupabaseConnection } = require("@/lib/supabase");
+        // Невелика затримка для завантаження модулів
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const { supabase, checkSupabaseConnection } = require("@/lib/supabase");
+        
+        // Якщо supabase клієнт не створений, значить змінні не налаштовані
+        if (!supabase) {
+          console.warn("Supabase client not initialized. Check .env.local file.");
+          setSupabaseStatus("disconnected");
+          return;
+        }
+        
         const isConnected = await checkSupabaseConnection();
         setSupabaseStatus(isConnected ? "connected" : "disconnected");
       } catch (error) {
+        console.error("Помилка перевірки Supabase:", error);
         setSupabaseStatus("disconnected");
       }
     };
