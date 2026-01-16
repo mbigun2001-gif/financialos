@@ -45,6 +45,7 @@ export default function SavingsPage() {
     const goal: Goal = {
       id: Date.now().toString(),
       title: formData.title,
+      type: "financial",
       targetAmount: parseFloat(formData.targetAmount),
       currentAmount: 0,
       category: formData.category,
