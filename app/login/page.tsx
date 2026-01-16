@@ -54,15 +54,21 @@ export default function LoginPage() {
 
         const result = await register(username, password, email || undefined);
         if (result.success) {
+          // Невелика затримка для гарантії збереження даних в localStorage
+          await new Promise(resolve => setTimeout(resolve, 200));
           // Після реєстрації автоматично логінимо
           const loginResult = await login(username, password, rememberMe);
           if (loginResult.success) {
-            router.push("/");
+            // Додаткова затримка перед перенаправленням
+            await new Promise(resolve => setTimeout(resolve, 100));
+            window.location.href = "/"; // Використовуємо window.location для повного перезавантаження
           } else {
-            setError("Реєстрація успішна, але не вдалося увійти. Спробуйте увійти вручну.");
+            setError(loginResult.error || "Реєстрація успішна, але не вдалося увійти. Спробуйте увійти вручну.");
+            setLoading(false);
           }
         } else {
           setError(result.error || "Помилка реєстрації");
+          setLoading(false);
         }
       }
     } catch (err) {
@@ -73,7 +79,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4 md:p-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

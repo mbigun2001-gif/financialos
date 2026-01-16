@@ -122,6 +122,16 @@ export async function register(
 
   users.push(newUser);
   saveUsers(users);
+  
+  // Гарантуємо, що дані збережені
+  if (typeof window !== "undefined") {
+    // Перевіряємо, що користувач дійсно збережений
+    const savedUsers = loadUsers();
+    const savedUser = savedUsers.find(u => u.id === newUser.id);
+    if (!savedUser) {
+      return { success: false, error: "Помилка збереження користувача" };
+    }
+  }
 
   return { success: true };
 }

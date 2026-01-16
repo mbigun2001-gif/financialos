@@ -66,7 +66,7 @@ export function Sidebar() {
   }, [showAppMenu]);
 
   return (
-    <div className="flex h-screen w-64 flex-col border-r border-slate-800/50 bg-gradient-to-b from-slate-900/90 to-slate-950/90 backdrop-blur-sm">
+    <div className="hidden md:flex h-screen w-64 flex-col border-r border-slate-800/50 bg-gradient-to-b from-slate-900/90 to-slate-950/90 backdrop-blur-sm">
       <div className="flex h-16 items-center border-b border-slate-800/50 px-6 bg-slate-900/30">
         <div className="relative w-full" ref={menuRef}>
           <button

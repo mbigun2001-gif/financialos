@@ -1,4 +1,5 @@
 import { Sidebar } from "@/components/sidebar";
+import { MobileMenu } from "@/components/mobile-menu";
 
 export default function DashboardLayout({
   children,
@@ -7,9 +8,10 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="flex h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+      <MobileMenu />
       <Sidebar />
       <main className="flex-1 overflow-y-auto bg-slate-950/50">
-        <div className="container mx-auto p-8">{children}</div>
+        <div className="container mx-auto p-4 md:p-8">{children}</div>
       </main>
     </div>
   );

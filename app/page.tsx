@@ -43,11 +43,11 @@ export default function Home() {
             <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600">
               <Sparkles className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-slate-100 via-blue-200 to-purple-200 bg-clip-text text-transparent">
+            <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-slate-100 via-blue-200 to-purple-200 bg-clip-text text-transparent">
               Оберіть додаток
             </h1>
           </div>
-          <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+          <p className="text-base md:text-xl text-slate-400 max-w-2xl mx-auto px-4">
             Виберіть додаток для роботи з вашими фінансами та цілями
           </p>
         </motion.div>
