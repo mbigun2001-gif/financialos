@@ -29,14 +29,44 @@ export const supabase = supabaseUrl && supabaseAnonKey && isValidKey
 
 // Перевірка підключення до Supabase
 export async function checkSupabaseConnection(): Promise<boolean> {
-  if (!supabase) return false;
+  if (!supabase) {
+    console.warn("Supabase client is null. Check environment variables.");
+    return false;
+  }
   
   try {
     // Простий запит для перевірки підключення
-    const { error } = await supabase.from('sync_data').select('id').limit(1);
+    const { data, error } = await supabase.from('sync_data').select('id').limit(1);
+    
     // Якщо помилка про відсутність таблиці - це нормально, таблицю потрібно створити
-    return error === null || error.code === 'PGRST116' || error.message.includes('relation') || error.message.includes('does not exist');
-  } catch {
+    // Але якщо помилка про RLS або інші проблеми - це означає що підключення є
+    if (error) {
+      const isTableMissing = error.message?.includes('relation') || 
+                            error.message?.includes('does not exist') ||
+                            error.code === '42P01'; // PostgreSQL error code for "relation does not exist"
+      const isRLSBlocked = error.code === '42501' || 
+                          error.message?.includes('row-level security policy') ||
+                          error.message?.includes('permission denied');
+      
+      if (isTableMissing) {
+        console.warn("Supabase: Таблиця 'sync_data' не знайдена. Виконайте SQL скрипт.");
+        return false; // Вважаємо, що не підключено, якщо таблиці немає
+      }
+      
+      if (isRLSBlocked) {
+        console.warn("Supabase: Доступ заблоковано RLS. Перевірте політики.");
+        return true; // Підключено, але RLS блокує доступ
+      }
+      
+      // Інші помилки - можливо підключення є, але є інші проблеми
+      console.warn("Supabase: Помилка підключення:", error.message);
+      return false;
+    }
+    
+    // Якщо помилок немає - підключення успішне
+    return true;
+  } catch (e) {
+    console.error("Supabase: Виняток при перевірці підключення:", e);
     return false;
   }
 }
