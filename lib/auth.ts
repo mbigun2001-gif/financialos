@@ -48,7 +48,16 @@ function loadUsers(): User[] {
 // Збереження користувачів
 function saveUsers(users: User[]): void {
   if (typeof window === "undefined") return;
-  localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+  try {
+    localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(users));
+    // Перевіряємо, що дані дійсно збережені
+    const verify = localStorage.getItem(STORAGE_KEY_USERS);
+    if (!verify) {
+      console.error("Помилка: дані не збережені в localStorage");
+    }
+  } catch (error) {
+    console.error("Помилка збереження користувачів:", error);
+  }
 }
 
 // Завантаження сесії
@@ -94,13 +103,19 @@ export async function register(
 
   const users = loadUsers();
 
+  // Очищаємо пробіли з логіну для перевірки
+  const cleanUsername = username.trim();
+  
   // Перевірка чи користувач вже існує
-  if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+  if (users.some(u => u.username.trim().toLowerCase() === cleanUsername.toLowerCase())) {
     return { success: false, error: "Користувач з таким логіном вже існує" };
   }
 
+  // Очищаємо пробіли з логіну
+  const cleanUsername = username.trim();
+  
   // Валідація
-  if (username.length < 3) {
+  if (cleanUsername.length < 3) {
     return { success: false, error: "Логін повинен містити мінімум 3 символи" };
   }
 
@@ -111,25 +126,37 @@ export async function register(
   // Хешування пароля
   const passwordHash = await hashPassword(password);
 
-  // Створення користувача
+  // Створення користувача (зберігаємо очищений логін)
   const newUser: User = {
     id: Date.now().toString(),
-    username,
+    username: cleanUsername, // Зберігаємо очищений логін
     passwordHash,
-    email,
+    email: email?.trim(),
     createdAt: new Date().toISOString(),
   };
 
   users.push(newUser);
   saveUsers(users);
   
-  // Гарантуємо, що дані збережені
+  // Гарантуємо, що дані збережені - перевіряємо кілька разів
   if (typeof window !== "undefined") {
+    // Невелика затримка для гарантії збереження
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
     // Перевіряємо, що користувач дійсно збережений
-    const savedUsers = loadUsers();
-    const savedUser = savedUsers.find(u => u.id === newUser.id);
+    let savedUsers = loadUsers();
+    let savedUser = savedUsers.find(u => u.id === newUser.id || u.username.toLowerCase() === newUser.username.toLowerCase());
+    
+    // Якщо не знайдено, пробуємо ще раз
     if (!savedUser) {
-      return { success: false, error: "Помилка збереження користувача" };
+      await new Promise(resolve => setTimeout(resolve, 50));
+      savedUsers = loadUsers();
+      savedUser = savedUsers.find(u => u.id === newUser.id || u.username.toLowerCase() === newUser.username.toLowerCase());
+    }
+    
+    if (!savedUser) {
+      console.error("Користувач не знайдений після збереження. Збережені користувачі:", savedUsers);
+      return { success: false, error: "Помилка збереження користувача. Спробуйте ще раз." };
     }
   }
 
@@ -146,10 +173,28 @@ export async function login(
     return { success: false, error: "Браузер не підтримується" };
   }
 
+  // Очищаємо пробіли з логіну
+  const cleanUsername = username.trim();
+  
+  if (!cleanUsername) {
+    return { success: false, error: "Введіть логін" };
+  }
+
   const users = loadUsers();
-  const user = users.find(u => u.username.toLowerCase() === username.toLowerCase());
+  
+  // Детальний пошук користувача
+  const user = users.find(u => {
+    const storedUsername = u.username.trim().toLowerCase();
+    const inputUsername = cleanUsername.toLowerCase();
+    return storedUsername === inputUsername;
+  });
 
   if (!user) {
+    // Додаткова інформація для відлагодження (тільки в розробці)
+    if (process.env.NODE_ENV === "development") {
+      console.log("Список користувачів:", users.map(u => u.username));
+      console.log("Шукаємо:", cleanUsername);
+    }
     return { success: false, error: "Невірний логін або пароль" };
   }
 

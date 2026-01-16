@@ -37,8 +37,10 @@ export default function LoginPage() {
 
     try {
       if (isLogin) {
-        // Логін
-        const result = await login(username, password, rememberMe);
+        // Логін - очищаємо пробіли
+        const cleanUsername = username.trim();
+        const cleanPassword = password.trim();
+        const result = await login(cleanUsername, cleanPassword, rememberMe);
         if (result.success) {
           router.push("/");
         } else {
@@ -52,12 +54,16 @@ export default function LoginPage() {
           return;
         }
 
-        const result = await register(username, password, email || undefined);
+        // Очищаємо пробіли перед реєстрацією
+        const cleanUsername = username.trim();
+        const cleanPassword = password.trim();
+        const cleanEmail = email?.trim();
+        const result = await register(cleanUsername, cleanPassword, cleanEmail || undefined);
         if (result.success) {
           // Невелика затримка для гарантії збереження даних в localStorage
-          await new Promise(resolve => setTimeout(resolve, 200));
-          // Після реєстрації автоматично логінимо
-          const loginResult = await login(username, password, rememberMe);
+          await new Promise(resolve => setTimeout(resolve, 300));
+          // Після реєстрації автоматично логінимо (використовуємо очищені дані)
+          const loginResult = await login(cleanUsername, cleanPassword, rememberMe);
           if (loginResult.success) {
             // Додаткова затримка перед перенаправленням
             await new Promise(resolve => setTimeout(resolve, 100));
