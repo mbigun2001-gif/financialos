@@ -621,7 +621,11 @@ export default function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-slate-400">
-              Експортуйте або імпортуйте дані для синхронізації між пристроями (телефон, комп'ютер)
+              Експортуйте або імпортуйте дані для синхронізації між пристроями (телефон, комп'ютер, веб-версія).
+              <br />
+              <span className="text-xs text-slate-500 mt-1 block">
+                Включає: транзакції, цілі, активи, зобов'язання, категорії, користувачів та налаштування
+              </span>
             </p>
 
             {syncStatus !== "idle" && (

@@ -103,16 +103,13 @@ export async function register(
 
   const users = loadUsers();
 
-  // Очищаємо пробіли з логіну для перевірки
+  // Очищаємо пробіли з логіну
   const cleanUsername = username.trim();
   
   // Перевірка чи користувач вже існує
   if (users.some(u => u.username.trim().toLowerCase() === cleanUsername.toLowerCase())) {
     return { success: false, error: "Користувач з таким логіном вже існує" };
   }
-
-  // Очищаємо пробіли з логіну
-  const cleanUsername = username.trim();
   
   // Валідація
   if (cleanUsername.length < 3) {

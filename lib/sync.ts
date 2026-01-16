@@ -4,12 +4,14 @@
 import { getCurrentUser } from "./auth";
 
 // Інтерфейс для синхронізації
-interface SyncData {
+export interface SyncData {
   transactions: any[];
   goals: any[];
   assets: any[];
   liabilities: any[];
   categories: any[];
+  users?: any[]; // Додаємо користувачів для синхронізації
+  sessions?: any[]; // Додаємо сесії для синхронізації
   settings: Record<string, string>;
   lastSync: number;
 }
@@ -29,6 +31,8 @@ export function exportData(): SyncData {
       assets: [],
       liabilities: [],
       categories: [],
+      users: [],
+      sessions: [],
       settings: {},
       lastSync: Date.now(),
     };
@@ -39,6 +43,11 @@ export function exportData(): SyncData {
   const assets = JSON.parse(localStorage.getItem("assets") || "[]");
   const liabilities = JSON.parse(localStorage.getItem("liabilities") || "[]");
   const categories = JSON.parse(localStorage.getItem("categories") || "[]");
+  
+  // Експортуємо користувачів та сесії
+  const users = JSON.parse(localStorage.getItem("financial_os_users") || "[]");
+  const session = localStorage.getItem("financial_os_session");
+  const sessions = session ? [JSON.parse(session)] : [];
   
   // Збираємо всі налаштування
   const settings: Record<string, string> = {};
@@ -55,6 +64,8 @@ export function exportData(): SyncData {
     assets,
     liabilities,
     categories,
+    users,
+    sessions,
     settings,
     lastSync: Date.now(),
   };
@@ -137,6 +148,38 @@ export function importData(data: SyncData, merge: boolean = true): void {
     localStorage.setItem("assets", JSON.stringify(mergedAssets));
     localStorage.setItem("liabilities", JSON.stringify(mergedLiabilities));
     localStorage.setItem("categories", JSON.stringify(mergedCategories));
+    
+    // Об'єднуємо користувачів (важливо для синхронізації між пристроями)
+    if (data.users && data.users.length > 0) {
+      const existingUsers = JSON.parse(localStorage.getItem("financial_os_users") || "[]");
+      const mergedUsers = [...existingUsers];
+      data.users.forEach((u) => {
+        const index = mergedUsers.findIndex((eu) => eu.id === u.id || eu.username.toLowerCase() === u.username.toLowerCase());
+        if (index === -1) {
+          mergedUsers.push(u);
+        } else {
+          // Використовуємо новішу версію (за датою створення)
+          const existingDate = new Date(mergedUsers[index].createdAt || 0).getTime();
+          const newDate = new Date(u.createdAt || 0).getTime();
+          if (newDate >= existingDate) {
+            mergedUsers[index] = u;
+          }
+        }
+      });
+      localStorage.setItem("financial_os_users", JSON.stringify(mergedUsers));
+    }
+    
+    // Об'єднуємо сесії (використовуємо найновішу активну сесію)
+    if (data.sessions && data.sessions.length > 0) {
+      const existingSession = localStorage.getItem("financial_os_session");
+      const newSession = data.sessions[0]; // Беремо першу сесію
+      if (newSession && newSession.expiresAt && newSession.expiresAt > Date.now()) {
+        // Якщо нова сесія валідна, використовуємо її
+        if (!existingSession || JSON.parse(existingSession).expiresAt < newSession.expiresAt) {
+          localStorage.setItem("financial_os_session", JSON.stringify(newSession));
+        }
+      }
+    }
   } else {
     // Повна заміна
     localStorage.setItem("transactions", JSON.stringify(data.transactions));
@@ -144,6 +187,14 @@ export function importData(data: SyncData, merge: boolean = true): void {
     localStorage.setItem("assets", JSON.stringify(data.assets));
     localStorage.setItem("liabilities", JSON.stringify(data.liabilities));
     localStorage.setItem("categories", JSON.stringify(data.categories));
+    
+    // Замінюємо користувачів та сесії
+    if (data.users) {
+      localStorage.setItem("financial_os_users", JSON.stringify(data.users));
+    }
+    if (data.sessions && data.sessions.length > 0) {
+      localStorage.setItem("financial_os_session", JSON.stringify(data.sessions[0]));
+    }
   }
 
   // Оновлюємо налаштування
