@@ -1,8 +1,9 @@
-// Автоматична синхронізація через cloud storage
-// Використовує localStorage як тимчасове сховище + автоматичний експорт/імпорт
+// Автоматична синхронізація через cloud storage (Supabase)
+// Використовує Supabase для зберігання даних між пристроями
 
 import { getCurrentUser } from "./auth";
 import { exportData, importData, SyncData } from "./sync";
+import { supabase, checkSupabaseConnection } from "./supabase";
 
 const CLOUD_SYNC_KEY = "financial_os_cloud_sync";
 const SYNC_CHECK_INTERVAL = 10000; // Перевірка кожні 10 секунд
@@ -11,7 +12,7 @@ const LAST_CLOUD_SYNC_KEY = "financial_os_last_cloud_sync";
 // Простий cloud storage через localStorage + автоматичний sync
 // Для production можна замінити на Firebase, Supabase або інший backend
 
-// Збереження даних в cloud через API
+// Збереження даних в cloud через Supabase
 async function saveToCloud(data: SyncData): Promise<void> {
   if (typeof window === "undefined") return;
   
@@ -29,32 +30,57 @@ async function saveToCloud(data: SyncData): Promise<void> {
     localStorage.setItem(CLOUD_SYNC_KEY, JSON.stringify(cloudData));
     localStorage.setItem(LAST_CLOUD_SYNC_KEY, Date.now().toString());
     
-    // Відправляємо на сервер
-    try {
-      const response = await fetch("/api/sync", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: user.userId,
-          data: cloudData,
-          deviceId: getDeviceId(),
-        }),
-      });
+    // Спробуємо зберегти в Supabase
+    if (supabase) {
+      try {
+        const { error } = await supabase
+          .from('sync_data')
+          .upsert({
+            user_id: user.userId,
+            data: cloudData,
+            device_id: getDeviceId(),
+            synced_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }, {
+            onConflict: 'user_id'
+          });
 
-      if (!response.ok) {
-        console.warn("Помилка збереження на сервер, використовуємо localStorage");
+        if (error) {
+          console.warn("Помилка збереження в Supabase, використовуємо localStorage:", error);
+        } else {
+          console.log("Дані успішно збережено в Supabase");
+        }
+      } catch (error) {
+        console.warn("Неможливо з'єднатися з Supabase, використовуємо localStorage:", error);
       }
-    } catch (error) {
-      console.warn("Неможливо з'єднатися з сервером, використовуємо localStorage:", error);
+    } else {
+      // Fallback на API endpoint якщо Supabase не налаштовано
+      try {
+        const response = await fetch("/api/sync", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId: user.userId,
+            data: cloudData,
+            deviceId: getDeviceId(),
+          }),
+        });
+
+        if (!response.ok) {
+          console.warn("Помилка збереження на сервер, використовуємо localStorage");
+        }
+      } catch (error) {
+        console.warn("Неможливо з'єднатися з сервером, використовуємо localStorage:", error);
+      }
     }
   } catch (error) {
     console.error("Помилка збереження в cloud:", error);
   }
 }
 
-// Завантаження даних з cloud через API
+// Завантаження даних з cloud через Supabase
 async function loadFromCloud(): Promise<SyncData | null> {
   if (typeof window === "undefined") return null;
   
@@ -62,17 +88,46 @@ async function loadFromCloud(): Promise<SyncData | null> {
     const user = getCurrentUser();
     if (!user) return null;
 
-    // Спробуємо завантажити з сервера
-    try {
-      const response = await fetch(`/api/sync?userId=${user.userId}`);
-      if (response.ok) {
-        const result = await response.json();
-        if (result.data) {
-          return result.data;
+    // Спробуємо завантажити з Supabase
+    if (supabase) {
+      try {
+        const { data, error } = await supabase
+          .from('sync_data')
+          .select('data, synced_at')
+          .eq('user_id', user.userId)
+          .single();
+
+        if (!error && data && data.data) {
+          const cloudData = data.data as SyncData;
+          
+          // Перевіряємо чи дані не застарілі (більше 1 години)
+          const oneHour = 60 * 60 * 1000;
+          const syncedAt = data.synced_at ? new Date(data.synced_at).getTime() : 0;
+          if (syncedAt && Date.now() - syncedAt > oneHour) {
+            return null;
+          }
+          
+          console.log("Дані успішно завантажено з Supabase");
+          return cloudData;
+        } else if (error && error.code !== 'PGRST116') { // PGRST116 = no rows returned
+          console.warn("Помилка завантаження з Supabase:", error);
         }
+      } catch (error) {
+        console.warn("Неможливо з'єднатися з Supabase, використовуємо localStorage:", error);
       }
-    } catch (error) {
-      console.warn("Неможливо з'єднатися з сервером, використовуємо localStorage:", error);
+    } else {
+      // Fallback на API endpoint якщо Supabase не налаштовано
+      try {
+        const response = await fetch(`/api/sync?userId=${user.userId}`);
+        if (response.ok) {
+          const result = await response.json();
+          if (result.data) {
+            return result.data;
+          }
+        }
+      } catch (error) {
+        console.warn("Неможливо з'єднатися з сервером, використовуємо localStorage:", error);
+      }
     }
 
     // Fallback на localStorage

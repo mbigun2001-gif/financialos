@@ -36,13 +36,6 @@
       "description": "Відкрити головний дашборд",
       "url": "/dashboard",
       "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Досягнення цілей",
-      "short_name": "Цілі",
-      "description": "Відкрити трекер цілей",
-      "url": "/goals-app",
-      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

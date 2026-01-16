@@ -15,8 +15,6 @@ import {
   X,
   LogOut,
   DollarSign,
-  Sparkles,
-  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -34,17 +32,8 @@ const navigation = [
 
 export function MobileMenu() {
   const [isOpen, setIsOpen] = useState(false);
-  const [showAppMenu, setShowAppMenu] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-
-  const isFinancialOS = pathname?.startsWith("/dashboard") || 
-                        pathname?.startsWith("/capital") || 
-                        pathname?.startsWith("/transactions") || 
-                        pathname?.startsWith("/liabilities") || 
-                        pathname?.startsWith("/business") || 
-                        pathname?.startsWith("/settings");
-  const isGoalsApp = pathname?.startsWith("/goals-app");
 
   return (
     <>
@@ -62,79 +51,24 @@ export function MobileMenu() {
           <div className="flex flex-col h-full">
             {/* Заголовок */}
             <div className="flex items-center justify-between p-4 border-b border-slate-800">
-              <div className="flex items-center gap-2">
+              <Link 
+                href="/dashboard"
+                onClick={() => setIsOpen(false)}
+                className="flex items-center gap-2"
+              >
                 <div className="p-1.5 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
-                  {isFinancialOS ? (
-                    <DollarSign className="h-5 w-5 text-white" />
-                  ) : isGoalsApp ? (
-                    <Sparkles className="h-5 w-5 text-white" />
-                  ) : (
-                    <DollarSign className="h-5 w-5 text-white" />
-                  )}
+                  <DollarSign className="h-5 w-5 text-white" />
                 </div>
                 <span className="text-lg font-bold bg-gradient-to-r from-slate-100 to-slate-300 bg-clip-text text-transparent">
-                  {isFinancialOS ? "Фінансова ОС" : isGoalsApp ? "Досягнення цілей" : "Оберіть додаток"}
+                  Фінансова ОС
                 </span>
-              </div>
+              </Link>
               <button
                 onClick={() => setIsOpen(false)}
                 className="p-2 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors"
               >
                 <X className="h-6 w-6" />
               </button>
-            </div>
-
-            {/* Випадаюче меню додатків */}
-            <div className="p-4 border-b border-slate-800">
-              <button
-                onClick={() => setShowAppMenu(!showAppMenu)}
-                className="w-full flex items-center justify-between p-3 rounded-lg bg-slate-900/50 hover:bg-slate-800/50 transition-colors"
-              >
-                <span className="text-sm font-medium text-slate-300">Оберіть додаток</span>
-                <ChevronDown className={cn("h-4 w-4 text-slate-400 transition-transform", showAppMenu && "rotate-180")} />
-              </button>
-              {showAppMenu && (
-                <div className="mt-2 space-y-2">
-                  <Link
-                    href="/dashboard"
-                    onClick={() => {
-                      setIsOpen(false);
-                      setShowAppMenu(false);
-                    }}
-                    className={cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                      isFinancialOS
-                        ? "bg-gradient-to-r from-blue-600/20 to-purple-600/20 text-slate-100 border border-blue-500/30"
-                        : "bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-                    )}
-                  >
-                    <DollarSign className="h-5 w-5" />
-                    <div className="flex-1">
-                      <p className="font-medium">Фінансова ОС</p>
-                      <p className="text-xs text-slate-500">Операційна система для фінансів</p>
-                    </div>
-                  </Link>
-                  <Link
-                    href="/goals-app"
-                    onClick={() => {
-                      setIsOpen(false);
-                      setShowAppMenu(false);
-                    }}
-                    className={cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors",
-                      isGoalsApp
-                        ? "bg-gradient-to-r from-purple-600/20 to-pink-600/20 text-slate-100 border border-purple-500/30"
-                        : "bg-slate-800/50 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
-                    )}
-                  >
-                    <Sparkles className="h-5 w-5" />
-                    <div className="flex-1">
-                      <p className="font-medium">Досягнення цілей</p>
-                      <p className="text-xs text-slate-500">Трекер цілей та задач</p>
-                    </div>
-                  </Link>
-                </div>
-              )}
             </div>
 
             {/* Навігація */}
