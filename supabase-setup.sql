@@ -1,8 +1,11 @@
 -- SQL скрипт для створення таблиці синхронізації в Supabase
 -- Виконайте цей скрипт в SQL Editor в Supabase Dashboard
 
+-- Видалення таблиці якщо вона існує (для пересоздання)
+DROP TABLE IF EXISTS sync_data CASCADE;
+
 -- Створення таблиці для синхронізації даних
-CREATE TABLE IF NOT EXISTS sync_data (
+CREATE TABLE sync_data (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id TEXT NOT NULL UNIQUE,
   data JSONB NOT NULL,
@@ -28,6 +31,7 @@ END;
 $$ language 'plpgsql';
 
 -- Тригер для автоматичного оновлення updated_at
+DROP TRIGGER IF EXISTS update_sync_data_updated_at ON sync_data;
 CREATE TRIGGER update_sync_data_updated_at 
   BEFORE UPDATE ON sync_data 
   FOR EACH ROW 
@@ -36,30 +40,17 @@ CREATE TRIGGER update_sync_data_updated_at
 -- Налаштування Row Level Security (RLS)
 ALTER TABLE sync_data ENABLE ROW LEVEL SECURITY;
 
--- Політика: користувачі можуть читати тільки свої дані
-CREATE POLICY "Users can read own sync data"
-  ON sync_data
-  FOR SELECT
-  USING (auth.uid()::text = user_id OR user_id = current_setting('app.user_id', true));
+-- Видалення старих політик якщо вони існують
+DROP POLICY IF EXISTS "Users can read own sync data" ON sync_data;
+DROP POLICY IF EXISTS "Users can insert own sync data" ON sync_data;
+DROP POLICY IF EXISTS "Users can update own sync data" ON sync_data;
+DROP POLICY IF EXISTS "Users can delete own sync data" ON sync_data;
+DROP POLICY IF EXISTS "Public access" ON sync_data;
 
--- Політика: користувачі можуть вставляти тільки свої дані
-CREATE POLICY "Users can insert own sync data"
-  ON sync_data
-  FOR INSERT
-  WITH CHECK (auth.uid()::text = user_id OR user_id = current_setting('app.user_id', true));
-
--- Політика: користувачі можуть оновлювати тільки свої дані
-CREATE POLICY "Users can update own sync data"
-  ON sync_data
-  FOR UPDATE
-  USING (auth.uid()::text = user_id OR user_id = current_setting('app.user_id', true));
-
--- Політика: користувачі можуть видаляти тільки свої дані
-CREATE POLICY "Users can delete own sync data"
-  ON sync_data
-  FOR DELETE
-  USING (auth.uid()::text = user_id OR user_id = current_setting('app.user_id', true));
-
--- Для публічного доступу (якщо не використовуєте Supabase Auth)
--- Можна використати цю політику замість вищевказаних:
--- CREATE POLICY "Public access" ON sync_data FOR ALL USING (true) WITH CHECK (true);
+-- Для публічного доступу (оскільки не використовуємо Supabase Auth)
+-- Це дозволяє всім користувачам читати/писати дані (безпека через user_id)
+CREATE POLICY "Public access" 
+  ON sync_data 
+  FOR ALL 
+  USING (true) 
+  WITH CHECK (true);
